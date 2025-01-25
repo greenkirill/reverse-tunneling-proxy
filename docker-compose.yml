@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  public_server:
+    build:
+      context: .
+    container_name: public_server
+    environment:
+      - SERVICE=public_server
+    ports:
+      - "25566:25566"
+      - "12345:12345"
+
+  nat_server:
+    build:
+      context: .
+    container_name: nat_server
+    environment:
+      - SERVICE=nat_server
+    network_mode: host
