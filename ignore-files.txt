@@ -1,0 +1,11 @@
+world.zip
+not_so_old_backup
+old_backups
+mods/fullpack.zip
+data/.cache
+data/backups
+data/clibackup_2025-01-22_18-28-30.zip
+data/clibackup_2025-01-22_18-38-08.zip
+data/cliexport_2025-01-22_18-26-15.zip
+data/cliexport_2025-01-26_04-12-07.zip
+carryon-forge-1.20.1-2.1.2.7.jar

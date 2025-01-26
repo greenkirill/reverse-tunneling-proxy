@@ -8,7 +8,7 @@ services:
     environment:
       - SERVICE=public_server
     ports:
-      - "25566:25566"
+      - "25565:25565"
       - "12345:12345"
 
   nat_server:

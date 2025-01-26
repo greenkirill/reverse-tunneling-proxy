@@ -70,8 +70,8 @@ async def service_b_connection(reader: StreamReader, writer: StreamWriter) -> No
 
 
 async def main() -> None:
-    server_a = await asyncio.start_server(handle_client, "0.0.0.0", 25566)
-    print("Service A listening on port 25566")
+    server_a = await asyncio.start_server(handle_client, "0.0.0.0", 25565)
+    print("Service A listening on port 25565")
 
     server_b = await asyncio.start_server(service_b_connection, "0.0.0.0", 12345)
     print("Service B listener on port 12345")
