@@ -13,7 +13,7 @@ class Protocol:
     HEADER_SIZE = 9  # 4 байта длина + 4 байта UID + 1 байт тип сообщения
 
     @staticmethod
-    def build_message(uid: int, msg_type: MessageType, payload: bytes) -> bytes:
+    def build_message(uid: int, msg_type: int, payload: bytes) -> bytes:
         """
         Формирует сообщение с заголовком и данными.
 
@@ -29,7 +29,7 @@ class Protocol:
         return length_bytes + uid_bytes + msg_type_bytes + payload
 
     @staticmethod
-    async def read_message(reader: StreamReader) -> tuple[int, MessageType, bytes]:
+    async def read_message(reader: StreamReader) -> tuple[int, int, bytes]:
         """
         Читает сообщение из потока, разбирает заголовок и возвращает данные.
 

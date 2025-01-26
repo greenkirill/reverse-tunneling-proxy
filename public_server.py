@@ -36,7 +36,7 @@ async def handle_client(reader: StreamReader, writer: StreamWriter) -> None:
     if service_b:
         try:
             # Уведомить сервис Б о новом клиенте
-            message = Protocol.build_message(uid, MessageType.NEW_CLIENT, b"")
+            message = Protocol.build_message(uid, 0x02, b"")
             service_b.write(message)
             await service_b.drain()
             logging.debug(f"Notified Service B about new client {uid}")
@@ -51,7 +51,7 @@ async def handle_client(reader: StreamReader, writer: StreamWriter) -> None:
             if service_b:
                 try:
                     # Отправить данные сервису Б
-                    message = Protocol.build_message(uid, MessageType.DATA, data)
+                    message = Protocol.build_message(uid, 0x01, data)
                     service_b.write(message)
                     await service_b.drain()
                     logging.debug(f"Forwarded data from client {uid} to Service B")
@@ -62,7 +62,7 @@ async def handle_client(reader: StreamReader, writer: StreamWriter) -> None:
         del clients[uid]
         if service_b:
             try:
-                message = Protocol.build_message(uid, MessageType.DISCONNECT, b"")
+                message = Protocol.build_message(uid, 0x03, b"")
                 service_b.write(message)
                 await service_b.drain()
                 logging.debug(f"Notified Service B about client {uid} disconnection")

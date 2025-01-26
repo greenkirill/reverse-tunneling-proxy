@@ -57,7 +57,7 @@ class ClientHandler:
                 if not data:
                     break
                 # Отправляем данные сервису А через Protocol
-                message = Protocol.build_message(self.uid, MessageType.DATA, data)
+                message = Protocol.build_message(self.uid, 0x01, data)
                 self.service_a_writer.write(message)
                 await self.service_a_writer.drain()
                 logging.debug(f"[{self.uid}] Data sent to Service A: {len(data)}")
@@ -127,11 +127,11 @@ class ServiceB:
 
                 uid, msg_type, payload = result
                 logging.debug(f"Received message from Service A: uid={uid}, msg_type={msg_type}")
-                if msg_type == MessageType.DATA:  # DATA
+                if msg_type == 0x01:  # DATA
                     await self.handle_client_data(uid, payload)
-                elif msg_type == MessageType.NEW_CLIENT:  # NEW_CLIENT
+                elif msg_type == 0x02:  # NEW_CLIENT
                     await self.handle_new_client(uid)
-                elif msg_type == MessageType.DISCONNECT:  # DISCONNECT
+                elif msg_type == 0x03:  # DISCONNECT
                     await self.handle_disconnect(uid)
         except Exception as e:
             logging.error(f"Error while reading from Service A: {e}")
