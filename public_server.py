@@ -72,11 +72,34 @@ async def handle_client(reader: StreamReader, writer: StreamWriter) -> None:
 
 async def service_b_connection(reader: StreamReader, writer: StreamWriter) -> None:
     global service_b
-    service_b = writer
+    try:
+        writer.write(Protocol.build_message(0, 0x06, b"NEW_CONNECTION_ESTABLISHED"))
+        await writer.drain()
+        old_service_b = service_b
+        service_b = writer
+        logging.info("New Service B connection established")
+    except Exception as e:
+        logging.error(f"Error during NEW_CONNECTION_ESTABLISHED: {e}")
+        return
+
+    if old_service_b:
+        try:
+            old_service_b.write(Protocol.build_message(0, 0x07, b"END_OF_CONNECTION"))
+            await old_service_b.drain()
+            logging.info("Sent END_OF_CONNECTION to old Service B")
+        except Exception as e:
+            logging.error(f"Error sending END_OF_CONNECTION to old Service B: {e}")
+        finally:
+            try:
+                old_service_b.close()
+                await old_service_b.wait_closed()
+                logging.info("Old Service B connection closed")
+            except Exception as e:
+                logging.error(f"Error closing old Service B connection: {e}")
+
     logging.info("Service B connected")
     try:
         while True:
-            # Читаем сообщение от сервиса Б
             try:
                 result = await Protocol.read_message(reader)
                 if result is None:
@@ -104,6 +127,14 @@ async def service_b_connection(reader: StreamReader, writer: StreamWriter) -> No
                         logging.info(f"Client {uid} disconnected by Service B")
                     except Exception as e:
                         logging.error(f"Error disconnecting client {uid}: {e}")
+            elif msg_type == 0x04:
+                try:
+                    writer.write(Protocol.build_message(0, 0x05, b"PONG"))
+                    await writer.drain()
+                    logging.debug("Sent PONG to Service B")
+                except Exception as e:
+                    logging.error(f"Error sending PONG to Service B: {e}")
+
     except Exception as e:
         logging.error(f"Error disconnecting: {e}")
     finally:
