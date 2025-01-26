@@ -13,7 +13,7 @@ timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 log_file = f"logs/logs_nat_server_{timestamp}.txt"
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
         logging.FileHandler(log_file),

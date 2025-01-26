@@ -14,7 +14,7 @@ timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 log_file = f"logs/logs_public_server_{timestamp}.txt"
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
         logging.FileHandler(log_file),
@@ -39,7 +39,7 @@ async def handle_client(reader: StreamReader, writer: StreamWriter) -> None:
             message = Protocol.build_message(uid, 0x02, b"")
             service_b.write(message)
             await service_b.drain()
-            logging.debug(f"Notified Service B about new client {uid}")
+            logging.info(f"Notified Service B about new client {uid}")
         except Exception as e:
             logging.error(f"Error notifying Service B about new client {uid}: {e}")
 
@@ -65,7 +65,7 @@ async def handle_client(reader: StreamReader, writer: StreamWriter) -> None:
                 message = Protocol.build_message(uid, 0x03, b"")
                 service_b.write(message)
                 await service_b.drain()
-                logging.debug(f"Notified Service B about client {uid} disconnection")
+                logging.info(f"Notified Service B about client {uid} disconnection")
             except Exception as e:
                 logging.error(f"Error notifying Service B about client {uid} disconnection: {e}")
 
@@ -77,8 +77,13 @@ async def service_b_connection(reader: StreamReader, writer: StreamWriter) -> No
     try:
         while True:
             # Читаем сообщение от сервиса Б
-            result = await Protocol.read_message(reader)
-            if result is None:
+            try:
+                result = await Protocol.read_message(reader)
+                if result is None:
+                    logging.warning("Service B returned None during message read")
+                    break
+            except Exception as e:
+                logging.error(f"Error reading from Service B: {e}")
                 break
 
             uid, msg_type, payload = result
@@ -99,8 +104,13 @@ async def service_b_connection(reader: StreamReader, writer: StreamWriter) -> No
                         logging.info(f"Client {uid} disconnected by Service B")
                     except Exception as e:
                         logging.error(f"Error disconnecting client {uid}: {e}")
+    except Exception as e:
+        logging.error(f"Error disconnecting: {e}")
     finally:
-        logging.warning("Service B disconnected")
+        if writer.is_closing():
+            logging.warning("Service B disconnected: Writer is closing")
+        else:
+            logging.warning("Service B disconnected: Unknown reason")
         service_b = None
 
 
