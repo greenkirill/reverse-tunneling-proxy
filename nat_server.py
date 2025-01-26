@@ -25,12 +25,12 @@ class ClientHandler:
     def __init__(
         self,
         uid: int,
-        service_a_writer: StreamWriter,
+        service_b: 'ServiceB',
         minecraft_address: str,
         minecraft_port: int,
     ) -> None:
         self.uid: int = uid
-        self.service_a_writer: StreamWriter = service_a_writer
+        self.service_b = service_b
         self.minecraft_address: str = minecraft_address
         self.minecraft_port: int = minecraft_port
         self.minecraft_reader: Optional[StreamReader] = None
@@ -58,8 +58,9 @@ class ClientHandler:
                     break
                 # Отправляем данные сервису А через Protocol
                 message = Protocol.build_message(self.uid, 0x01, data)
-                self.service_a_writer.write(message)
-                await self.service_a_writer.drain()
+                if self.service_b.service_a_writer:
+                    self.service_b.service_a_writer.write(message)
+                    await self.service_b.service_a_writer.drain()
                 logging.debug(f"[{self.uid}] Data sent to Service A: {len(data)}")
         except Exception as e:
             logging.error(f"[{self.uid}] Error while reading from Minecraft: {e}")
@@ -252,7 +253,7 @@ class ServiceB:
         if uid not in self.clients and self.service_a_writer:
             try:
                 client_handler = ClientHandler(
-                    uid, self.service_a_writer, self.minecraft_address, self.minecraft_port
+                    uid, self, self.minecraft_address, self.minecraft_port
                 )
                 await client_handler.connect_to_minecraft()
                 self.clients[uid] = client_handler
